@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Any, Optional
 
 import httpx
 
@@ -151,6 +151,126 @@ class GPTProvider(LLMProvider):
             return f"[GPT stub] Received: {prompt[:100]}"
 
 
+# ── OpenAI-compatible providers ─────────────────────────────────────────────
+
+
+class OpenAICompatibleProvider(LLMProvider):
+    """Generic OpenAI-compatible chat completion backend over HTTP."""
+
+    DEFAULT_MODEL = ""
+
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str,
+        default_model: str,
+        extra_headers: Optional[dict[str, str]] = None,
+    ) -> None:
+        self._api_key = api_key
+        self._base_url = base_url.rstrip("/")
+        self.DEFAULT_MODEL = default_model
+        self._extra_headers = extra_headers or {}
+
+    async def invoke(
+        self,
+        prompt: str,
+        system: str = "",
+        model: str = "",
+        tools: Optional[list[dict]] = None,
+        **kwargs: object,
+    ) -> str:
+        """Invoke an OpenAI-compatible /chat/completions endpoint."""
+        selected_model = model or self.DEFAULT_MODEL
+        messages: list[dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        payload: dict[str, Any] = {
+            "model": selected_model,
+            "messages": messages,
+            "max_tokens": 4096,
+        }
+        if tools:
+            payload["tools"] = tools
+
+        headers = {
+            "Authorization": f"Bearer {self._api_key}",
+            "Content-Type": "application/json",
+            **self._extra_headers,
+        }
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{self._base_url}/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=120,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return data["choices"][0]["message"].get("content", "") or ""
+
+
+class GroqProvider(OpenAICompatibleProvider):
+    """Groq backend via its OpenAI-compatible API."""
+
+    DEFAULT_MODEL = "llama-3.1-70b-versatile"
+
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://api.groq.com/openai/v1",
+    ) -> None:
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            default_model=self.DEFAULT_MODEL,
+        )
+
+
+class OpenRouterProvider(OpenAICompatibleProvider):
+    """OpenRouter backend via its OpenAI-compatible API."""
+
+    DEFAULT_MODEL = "openai/gpt-4o-mini"
+
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://openrouter.ai/api/v1",
+        site_url: str = "",
+        app_name: str = "",
+    ) -> None:
+        extra_headers: dict[str, str] = {}
+        if site_url:
+            extra_headers["HTTP-Referer"] = site_url
+        if app_name:
+            extra_headers["X-Title"] = app_name
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            default_model=self.DEFAULT_MODEL,
+            extra_headers=extra_headers,
+        )
+
+
+class NvidiaNIMProvider(OpenAICompatibleProvider):
+    """NVIDIA NIM backend via its OpenAI-compatible API."""
+
+    DEFAULT_MODEL = "meta/llama-3.1-70b-instruct"
+
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://integrate.api.nvidia.com/v1",
+    ) -> None:
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            default_model=self.DEFAULT_MODEL,
+        )
+
+
 # ── Ollama ────────────────────────────────────────────────────────────────────
 
 
@@ -208,5 +328,24 @@ def get_provider(settings: object | None = None) -> LLMProvider:
     elif provider_name == "ollama":
         url = getattr(settings, "ollama_base_url", "http://localhost:11434")
         return OllamaProvider(base_url=url)
+    elif provider_name == "groq":
+        key = getattr(settings, "groq_api_key", None) or ""
+        url = getattr(settings, "groq_base_url", "https://api.groq.com/openai/v1")
+        return GroqProvider(api_key=key, base_url=url)
+    elif provider_name == "openrouter":
+        key = getattr(settings, "openrouter_api_key", None) or ""
+        url = getattr(settings, "openrouter_base_url", "https://openrouter.ai/api/v1")
+        site_url = getattr(settings, "openrouter_site_url", "") or ""
+        app_name = getattr(settings, "openrouter_app_name", "") or ""
+        return OpenRouterProvider(
+            api_key=key,
+            base_url=url,
+            site_url=site_url,
+            app_name=app_name,
+        )
+    elif provider_name == "nvidia_nim":
+        key = getattr(settings, "nvidia_nim_api_key", None) or ""
+        url = getattr(settings, "nvidia_nim_base_url", "https://integrate.api.nvidia.com/v1")
+        return NvidiaNIMProvider(api_key=key, base_url=url)
     else:
         raise ValueError(f"Unknown LLM provider: '{provider_name}'")

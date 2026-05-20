@@ -24,10 +24,20 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./omniagent.db"
 
     # ── LLM ───────────────────────────────────────────────────────────────────
-    llm_provider: str = "claude"  # claude | gpt | ollama
+    llm_provider: str = "claude"  # claude | gpt | ollama | groq | openrouter | nvidia_nim
     claude_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
     ollama_base_url: str = "http://localhost:11434"
+    groq_api_key: Optional[str] = None
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+    openrouter_api_key: Optional[str] = None
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    openrouter_site_url: str = ""
+    openrouter_app_name: str = ""
+    nvidia_nim_api_key: Optional[str] = None
+    nvidia_nim_base_url: str = "https://integrate.api.nvidia.com/v1"
+    tavily_api_key: Optional[str] = None
+    tavily_base_url: str = "https://api.tavily.com/search"
     default_model: str = "claude-3-5-sonnet-20241022"
 
     # ── Telegram ──────────────────────────────────────────────────────────────

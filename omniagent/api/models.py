@@ -102,7 +102,9 @@ class AgentCreate(BaseModel):
     """Request body for registering a new Agent."""
 
     name: str
-    model_provider: Literal["claude", "gpt", "ollama", "custom"]
+    model_provider: Literal[
+        "claude", "gpt", "ollama", "groq", "openrouter", "nvidia_nim", "custom"
+    ]
     model_name: str = Field(..., description="e.g. 'claude-3-5-sonnet-20241022'")
     system_prompt: str = ""
     skills: list[str] = Field(default_factory=list)
@@ -113,7 +115,9 @@ class Agent(BaseModel):
 
     id: UUID = Field(default_factory=uuid4)
     name: str
-    model_provider: Literal["claude", "gpt", "ollama", "custom"]
+    model_provider: Literal[
+        "claude", "gpt", "ollama", "groq", "openrouter", "nvidia_nim", "custom"
+    ]
     model_name: str
     system_prompt: str = ""
     skills: list[str] = Field(default_factory=list)

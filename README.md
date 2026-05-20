@@ -46,7 +46,7 @@ omniagent/
 ├── core/        # Agent loop (Think-Act-Observe), memory, skills
 ├── api/         # FastAPI control plane
 ├── gateway/     # Telegram / Discord / Slack adapters
-├── inference/   # LLM provider abstraction (Claude, GPT, Ollama)
+├── inference/   # LLM provider abstraction (Claude, GPT, Ollama, Groq, OpenRouter, NVIDIA NIM)
 ├── skills/      # Built-in + auto-synthesized skills
 └── db/          # SQLAlchemy ORM + async engine
 ```
