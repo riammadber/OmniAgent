@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "omniagent"
+version = "0.1.0"
+description = "Production-ready, self-improving Python agent framework with polling control plane"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "OmniAgent Contributors" }]
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "sqlalchemy[asyncio]>=2.0.30",
+    "aiosqlite>=0.20.0",
+    "anthropic>=0.28.0",
+    "openai>=1.30.0",
+    "httpx>=0.27.0",
+    "click>=8.1.7",
+    "python-telegram-bot>=21.3",
+    "cryptography>=42.0.8",
+    "structlog>=24.2.0",
+    "python-dotenv>=1.0.1",
+    "croniter>=2.0.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.7",
+    "pytest-httpx>=0.30.0",
+    "httpx>=0.27.0",
+]
+
+[project.scripts]
+omniagent = "omniagent.__main__:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["omniagent"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
