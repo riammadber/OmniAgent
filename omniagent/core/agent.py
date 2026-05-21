@@ -18,6 +18,7 @@ import logging
 import time
 import uuid
 from datetime import datetime, timezone
+from typing import Any, Optional
 
 from omniagent.api.models import Job, Run
 from omniagent.core.memory import LongTermMemory, ShortTermMemory
