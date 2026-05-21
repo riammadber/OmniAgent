@@ -5,11 +5,11 @@ from __future__ import annotations
 import uuid
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 
-from omniagent.api.models import Run, Skill
+from omniagent.api.models import Run
 from omniagent.core.memory import LongTermMemory, ShortTermMemory
 from omniagent.core.skill import SkillRegistry
 from omniagent.skills.synthesis import SkillSynthesis

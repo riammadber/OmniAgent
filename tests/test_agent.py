@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import uuid
 from typing import Any, Optional
-from unittest.mock import AsyncMock, patch
 
 import pytest
 
